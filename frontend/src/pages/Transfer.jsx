@@ -8,12 +8,22 @@ function Transfer() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleTransfer = async (e) => {
     e.preventDefault();
 
     setMessage("");
     setError("");
+
+    if (fromAccount === toAccount) {
+      setError(
+        "❌ Sender and Receiver account cannot be the same."
+      );
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await API.post("transfer/", {
@@ -23,9 +33,18 @@ function Transfer() {
       });
 
       setMessage(
-        `${res.data.message}
+        `✅ Transfer Successful!
+
+Amount Transferred: ₹${amount}
+
+Sender Account: ${fromAccount}
+Receiver Account: ${toAccount}
+
 Sender Balance: ₹${res.data.sender_balance}
-Receiver Balance: ₹${res.data.receiver_balance}`
+
+Receiver Balance: ₹${res.data.receiver_balance}
+
+📧 Email notifications sent successfully.`
       );
 
       setFromAccount("");
@@ -34,17 +53,22 @@ Receiver Balance: ₹${res.data.receiver_balance}`
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        "Transfer Failed"
+        "❌ Transfer Failed. Please check details."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="container mt-5">
 
-      <div className="card shadow p-4">
+      <div
+        className="card shadow p-4 mx-auto"
+        style={{ maxWidth: "700px" }}
+      >
 
-        <h2 className="text-center mb-4">
+        <h2 className="text-center mb-4 text-primary">
           🔄 Transfer Money
         </h2>
 
@@ -97,6 +121,7 @@ Receiver Balance: ₹${res.data.receiver_balance}`
               onChange={(e) =>
                 setAmount(e.target.value)
               }
+              min="1"
               required
             />
           </div>
@@ -104,15 +129,24 @@ Receiver Balance: ₹${res.data.receiver_balance}`
           <button
             type="submit"
             className="btn btn-primary w-100"
+            disabled={loading}
           >
-            Transfer
+            {loading
+              ? "Processing Transfer..."
+              : "Transfer"}
           </button>
 
         </form>
 
         {message && (
           <div className="alert alert-success mt-3">
-            <pre style={{ margin: 0 }}>
+            <pre
+              style={{
+                margin: 0,
+                whiteSpace: "pre-wrap",
+                fontFamily: "inherit",
+              }}
+            >
               {message}
             </pre>
           </div>

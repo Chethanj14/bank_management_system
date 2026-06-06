@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../services/api";
 
 function Login() {
@@ -35,7 +36,10 @@ function Login() {
 
       setMessage("Login Successful");
 
-      window.location.href = "/";
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
+
     } catch (err) {
       setError("Invalid Username or Password");
     }
@@ -56,10 +60,14 @@ function Login() {
         <form onSubmit={handleLogin}>
 
           <div className="mb-3">
+            <label className="form-label">
+              Username
+            </label>
+
             <input
               type="text"
               className="form-control"
-              placeholder="Username"
+              placeholder="Enter Username"
               value={username}
               onChange={(e) =>
                 setUsername(e.target.value)
@@ -69,10 +77,14 @@ function Login() {
           </div>
 
           <div className="mb-3">
+            <label className="form-label">
+              Password
+            </label>
+
             <input
               type="password"
               className="form-control"
-              placeholder="Password"
+              placeholder="Enter Password"
               value={password}
               onChange={(e) =>
                 setPassword(e.target.value)
@@ -101,6 +113,12 @@ function Login() {
             {error}
           </div>
         )}
+
+        <div className="mt-3 text-center">
+
+         
+
+        </div>
 
       </div>
 

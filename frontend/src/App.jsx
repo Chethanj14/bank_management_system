@@ -16,6 +16,9 @@ import Deposit from "./pages/Deposit";
 import Withdraw from "./pages/Withdraw";
 import Transfer from "./pages/Transfer";
 import Login from "./pages/Login";
+import CreateCustomer from "./pages/CreateCustomer";
+import CustomerDetails from "./pages/CustomerDetails";
+
 
 function Layout() {
   const location = useLocation();
@@ -99,6 +102,23 @@ function Layout() {
             </PrivateRoute>
           }
         />
+        <Route
+           path="/create-customer"
+          element={
+            <PrivateRoute>
+             <CreateCustomer />
+            </PrivateRoute>
+          }
+        />
+        <Route
+  path="/customer/:id"
+  element={
+    <PrivateRoute>
+      <CustomerDetails />
+    </PrivateRoute>
+  }
+/>
+   
 
       </Routes>
     </>

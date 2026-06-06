@@ -23,7 +23,13 @@ function Withdraw() {
       });
 
       setMessage(
-        `✅ Withdraw Successful! New Balance: ₹${res.data.new_balance}`
+        `✅ Withdraw Successful!
+        
+Amount Withdrawn: ₹${amount}
+
+Current Balance: ₹${res.data.new_balance}
+
+📧 Email notification sent successfully.`
       );
 
       setAccountNumber("");
@@ -42,7 +48,7 @@ function Withdraw() {
     <div className="container mt-5">
       <div
         className="card shadow p-4 mx-auto"
-        style={{ maxWidth: "500px" }}
+        style={{ maxWidth: "550px" }}
       >
         <h2 className="text-center mb-4 text-danger">
           💸 Withdraw Money
@@ -80,6 +86,7 @@ function Withdraw() {
                 setAmount(e.target.value)
               }
               required
+              min="1"
             />
           </div>
 
@@ -94,7 +101,15 @@ function Withdraw() {
 
         {message && (
           <div className="alert alert-success mt-3">
-            {message}
+            <pre
+              style={{
+                margin: 0,
+                whiteSpace: "pre-wrap",
+                fontFamily: "inherit",
+              }}
+            >
+              {message}
+            </pre>
           </div>
         )}
 

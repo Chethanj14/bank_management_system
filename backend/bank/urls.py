@@ -9,6 +9,7 @@ from .views import (
     withdraw,
     transfer,
     export_transactions,
+    create_customer,
 )
 
 router = DefaultRouter()
@@ -29,6 +30,13 @@ router.register(
 )
 
 urlpatterns = router.urls + [
+
+    # Create Customer
+    path(
+        'create-customer/',
+        create_customer,
+        name='create-customer'
+    ),
 
     # Deposit
     path(

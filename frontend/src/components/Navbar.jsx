@@ -8,7 +8,6 @@ function Navbar() {
 
     alert("Logged Out Successfully");
 
-    // Redirect to Login Page
     window.location.href = "/login";
   };
 
@@ -62,6 +61,17 @@ function Navbar() {
               </Link>
             </li>
 
+            {/* Create Customer */}
+            <li className="nav-item">
+              <Link
+                className="nav-link"
+                to="/create-customer"
+              >
+                Create Customer
+              </Link>
+            </li>
+
+            {/* Banking Operations */}
             <li className="nav-item">
               <Link className="nav-link" to="/deposit">
                 Deposit
@@ -80,6 +90,7 @@ function Navbar() {
               </Link>
             </li>
 
+            {/* Logout at Last */}
             <li className="nav-item ms-2">
               <button
                 className="btn btn-danger btn-sm"

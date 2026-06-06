@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../services/api";
 
 function Customers() {
@@ -60,6 +61,7 @@ function Customers() {
       <div className="row">
 
         {filteredCustomers.length > 0 ? (
+
           filteredCustomers.map((customer) => (
             <div
               className="col-md-4 mb-4"
@@ -81,15 +83,33 @@ function Customers() {
                     <strong>ID:</strong> {customer.id}
                   </p>
 
+                  <p>
+                    <strong>Phone:</strong> {customer.phone}
+                  </p>
+
+                  <div className="d-grid">
+
+                    <Link
+                      to={`/customer/${customer.id}`}
+                      className="btn btn-primary"
+                    >
+                      View Details
+                    </Link>
+
+                  </div>
+
                 </div>
 
               </div>
             </div>
           ))
+
         ) : (
+
           <div className="text-center">
             <h5>No Customer Found</h5>
           </div>
+
         )}
 
       </div>
