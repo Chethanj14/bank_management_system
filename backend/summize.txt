@@ -1,0 +1,268 @@
+Bank Management System – Backend Summary
+Technologies Used
+Python
+Django
+Django REST Framework (DRF)
+SQLite Database
+Postman (API Testing)
+1. Created Django Project
+django-admin startproject backend
+python manage.py startapp bank
+
+Created:
+
+Django Project → backend
+Django App → bank
+2. Designed Database Models
+Customer Model
+name
+email
+phone
+address
+
+Purpose:
+
+Store customer details.
+Account Model
+customer (ForeignKey)
+account_number
+account_type
+balance
+
+Purpose:
+
+Store bank account information.
+
+Relationship:
+
+Customer
+   |
+   | One Customer
+   |
+Many Accounts
+Transaction Model
+account (ForeignKey)
+transaction_type
+amount
+created_at
+
+Purpose:
+
+Store deposit, withdraw and transfer history.
+
+Relationship:
+
+Customer
+   |
+Account
+   |
+Transaction
+3. Database Migration
+
+Executed:
+
+python manage.py makemigrations
+python manage.py migrate
+
+Created database tables automatically.
+
+4. Registered Models in Admin Panel
+
+Registered:
+
+Customer
+Account
+Transaction
+
+Now manageable through:
+
+http://127.0.0.1:8000/admin
+5. Created Serializers
+
+Created:
+
+CustomerSerializer
+AccountSerializer
+TransactionSerializer
+
+Purpose:
+
+Convert Python objects ↔ JSON.
+
+Example:
+
+{
+  "name":"Chetan",
+  "email":"abc@gmail.com"
+}
+6. Implemented CRUD APIs Using ViewSets
+
+Created:
+
+CustomerViewSet
+AccountViewSet
+TransactionViewSet
+
+Used:
+
+ModelViewSet
+
+Provides automatically:
+
+GET
+POST
+PUT
+PATCH
+DELETE
+7. Configured Routers
+
+Used:
+
+DefaultRouter()
+
+Generated APIs:
+
+/api/customers/
+/api/accounts/
+/api/transactions/
+8. Tested CRUD Operations
+
+Successfully tested:
+
+Customer
+Create Customer
+Read Customer
+Update Customer
+Delete Customer
+Account
+Create Account
+Read Account
+Update Account
+Delete Account
+Transaction
+Create Transaction
+Read Transaction
+Update Transaction
+Delete Transaction
+9. Implemented Deposit API
+
+Endpoint:
+
+POST /api/deposit/
+
+Input:
+
+{
+    "account_number":"123456789",
+    "amount":5000
+}
+
+Logic:
+
+Find Account
+Add amount to balance
+Save Account
+Create Transaction record
+Return new balance
+
+Response:
+
+{
+    "message":"Deposit Successful",
+    "new_balance":"30000.00"
+}
+10. Implemented Withdraw API
+
+Endpoint:
+
+POST /api/withdraw/
+
+Input:
+
+{
+    "account_number":"123456789",
+    "amount":5000
+}
+
+Logic:
+
+Check account balance
+If sufficient:
+    Deduct amount
+    Save account
+    Create transaction
+Else:
+    Return error
+
+Response:
+
+{
+    "message":"Withdraw Successful",
+    "new_balance":"25000.00"
+}
+11. Implemented Transfer API
+
+Endpoint:
+
+POST /api/transfer/
+
+Input:
+
+{
+    "from_account":"123456789",
+    "to_account":"987654321",
+    "amount":1000
+}
+
+Logic:
+
+Check sender balance
+Deduct from sender
+Add to receiver
+Save both accounts
+Create transfer transaction records
+
+Response:
+
+{
+    "message":"Transfer Successful"
+}
+12. Transaction History Tracking
+
+Every operation automatically creates a transaction entry:
+
+Deposit
+Withdraw
+Transfer
+
+Stored in:
+
+Transaction Table
+APIs Implemented
+GET     /api/customers/
+POST    /api/customers/
+
+GET     /api/accounts/
+POST    /api/accounts/
+
+GET     /api/transactions/
+POST    /api/transactions/
+
+POST    /api/deposit/
+POST    /api/withdraw/
+POST    /api/transfer/
+How to Explain in Interview
+
+I developed the backend of a Bank Management System using Django REST Framework. I designed Customer, Account, and Transaction models with proper database relationships. I implemented complete CRUD APIs using ModelViewSets and serializers. Additionally, I built custom banking APIs for Deposit, Withdraw, and Fund Transfer operations, including balance validation and transaction history tracking. All APIs were tested using Postman and managed through Django Admin.
+
+This is a solid backend project that demonstrates:
+
+Django
+REST API Development
+Database Design
+CRUD Operations
+Business Logic Implementation
+API Testing with Postman
+MVC/MVT Architecture Understanding
+
+That's enough backend work to confidently discuss in internships and fresher interviews.
