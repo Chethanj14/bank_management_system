@@ -74,14 +74,16 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # DATABASE
 
-# DATABASE
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     # Render PostgreSQL
     DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL)
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
 else:
     # Local PostgreSQL
