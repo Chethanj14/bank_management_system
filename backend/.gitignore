@@ -17,3 +17,5 @@ frontend/dist/
 
 # Environment
 .env
+
+db.sqlite3
