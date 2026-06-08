@@ -10,6 +10,7 @@ from .views import (
     transfer,
     export_transactions,
     create_customer,
+    register,
 )
 
 router = DefaultRouter()
@@ -29,7 +30,16 @@ router.register(
     TransactionViewSet
 )
 
+
+
 urlpatterns = router.urls + [
+    
+    # Register
+    path(
+        'register/',
+        register,
+        name='register'
+    ),
 
     # Create Customer
     path(
@@ -65,4 +75,5 @@ urlpatterns = router.urls + [
         export_transactions,
         name='export-transactions'
     ),
+
 ]

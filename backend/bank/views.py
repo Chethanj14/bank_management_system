@@ -20,6 +20,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 
+
 # ---------------- CUSTOMER API ---------------- #
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -309,6 +310,41 @@ def export_transactions(request):
         ])
 
     return response
+
+# ---------------- REGISTER ---------------- #
+
+@api_view(['POST'])
+def register(request):
+
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    if not username or not password:
+        return Response(
+            {"message": "Username and Password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if User.objects.filter(username=username).exists():
+        return Response(
+            {"message": "Username already exists"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password
+    )
+
+    return Response(
+        {
+            "message": "User Registered Successfully",
+            "username": user.username
+        },
+        status=status.HTTP_201_CREATED
+    )
 # ---------------- CREATE CUSTOMER ---------------- #
 @api_view(['POST'])
 def create_customer(request):
