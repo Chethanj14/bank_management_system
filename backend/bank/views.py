@@ -107,8 +107,6 @@ def deposit(request):
 
 # ---------------- WITHDRAW ---------------- #
 
-# ---------------- WITHDRAW ---------------- #
-
 @api_view(['POST'])
 def withdraw(request):
 
@@ -137,26 +135,9 @@ def withdraw(request):
             amount=amount
         )
 
-        # Send Email Notification
-
-        send_mail(
-            subject='Withdraw Successful',
-            message=f'''
-Dear {account.customer.name},
-
-₹{amount} has been withdrawn successfully.
-
-Account Number: {account.account_number}
-
-Current Balance: ₹{account.balance}
-
-Thank you for banking with us.
-
-Bank Management System
-            ''',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[account.customer.email],
-            fail_silently=False,
+        # Email disabled temporarily
+        print(
+            f"Withdraw: ₹{amount} from {account.account_number}"
         )
 
         return Response({
@@ -182,14 +163,45 @@ Bank Management System
 
 
 # ---------------- TRANSFER ---------------- #
+# ---------------- TRANSFER ---------------- #
 
 @api_view(['POST'])
 def transfer(request):
 
     try:
+
         from_account_number = request.data.get('from_account')
         to_account_number = request.data.get('to_account')
-        amount = Decimal(request.data.get('amount'))
+        amount = request.data.get('amount')
+
+        if not from_account_number:
+            return Response(
+                {"message": "From Account is required"},
+                status=400
+            )
+
+        if not to_account_number:
+            return Response(
+                {"message": "To Account is required"},
+                status=400
+            )
+
+        if not amount:
+            return Response(
+                {"message": "Amount is required"},
+                status=400
+            )
+
+        amount = Decimal(str(amount))
+
+        # Prevent self transfer
+        if from_account_number == to_account_number:
+            return Response(
+                {
+                    "message": "Cannot transfer to the same account"
+                },
+                status=400
+            )
 
         from_account = Account.objects.get(
             account_number=from_account_number
@@ -199,66 +211,41 @@ def transfer(request):
             account_number=to_account_number
         )
 
+        # Check balance
         if from_account.balance < amount:
             return Response(
-                {"message": "Insufficient Balance"},
+                {
+                    "message": "Insufficient Balance"
+                },
                 status=400
             )
 
+        # Update balances
         from_account.balance -= amount
         to_account.balance += amount
 
         from_account.save()
         to_account.save()
 
+        # Transaction for sender
         Transaction.objects.create(
             account=from_account,
-            transaction_type='Transfer',
+            transaction_type='Transfer Sent',
             amount=amount
         )
 
-        # Sender Email
-
-        send_mail(
-            subject='Money Transfer Successful',
-            message=f'''
-Dear {from_account.customer.name},
-
-₹{amount} transferred successfully.
-
-Receiver Account:
-{to_account.account_number}
-
-Remaining Balance:
-₹{from_account.balance}
-
-Thank you for banking with us.
-''',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[from_account.customer.email],
-            fail_silently=False,
+        # Transaction for receiver
+        Transaction.objects.create(
+            account=to_account,
+            transaction_type='Transfer Received',
+            amount=amount
         )
 
-        # Receiver Email
-
-        send_mail(
-            subject='Money Received',
-            message=f'''
-Dear {to_account.customer.name},
-
-₹{amount} received successfully.
-
-Sender Account:
-{from_account.account_number}
-
-Current Balance:
-₹{to_account.balance}
-
-Thank you for banking with us.
-''',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[to_account.customer.email],
-            fail_silently=False,
+        # Email disabled temporarily
+        print(
+            f"Transfer Successful: ₹{amount} from "
+            f"{from_account.account_number} "
+            f"to {to_account.account_number}"
         )
 
         return Response({
@@ -267,12 +254,23 @@ Thank you for banking with us.
             "receiver_balance": str(to_account.balance)
         })
 
-    except Exception as e:
+    except Account.DoesNotExist:
+
         return Response(
-            {"message": str(e)},
-            status=400
+            {
+                "message": "Account Not Found"
+            },
+            status=404
         )
 
+    except Exception as e:
+
+        return Response(
+            {
+                "message": str(e)
+            },
+            status=400
+        )
 
 # ---------------- EXPORT CSV ---------------- #
 
