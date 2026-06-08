@@ -74,17 +74,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # DATABASE
 
+# DATABASE
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
+    # Render PostgreSQL
     DATABASES = {
         "default": dj_database_url.parse(DATABASE_URL)
     }
 else:
+    # Local PostgreSQL
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "bank_db",
+            "USER": "postgres",
+            "PASSWORD": "Ctnctn@j14",
+            "HOST": "localhost",
+            "PORT": "5432",
         }
     }
 

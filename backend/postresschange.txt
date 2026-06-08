@@ -1,0 +1,128 @@
+Great! If everything works with SQLite locally, switching to PostgreSQL is straightforward.
+
+Step 1: Install PostgreSQL Driver
+
+Inside your virtual environment:
+
+pip install psycopg2-binary
+
+Then update requirements:
+
+pip freeze > requirements.txt
+Step 2: Create PostgreSQL Database
+
+Install PostgreSQL on your system or use the PostgreSQL database you already created on Render.
+
+Example local database:
+
+Database Name: bank_db
+Username: postgres
+Password: yourpassword
+Port: 5432
+Step 3: Update settings.py
+
+Replace SQLite configuration with PostgreSQL:
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'bank_db',
+        'USER': 'postgres',
+        'PASSWORD': 'yourpassword',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+
+Or keep your current DATABASE_URL logic:
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "bank_db",
+            "USER": "postgres",
+            "PASSWORD": "yourpassword",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
+    }
+
+This is the best approach because it works both locally and on Render.
+
+Step 4: Delete Old SQLite Migrations Data (Optional)
+
+Keep the migration files, but PostgreSQL starts with an empty database.
+
+Run:
+
+python manage.py migrate
+
+You should see:
+
+Applying contenttypes...
+Applying auth...
+Applying admin...
+Applying bank.0001_initial...
+OK
+Step 5: Create Superuser Again
+
+Since PostgreSQL is a new database:
+
+python manage.py createsuperuser
+Step 6: Verify
+
+Run:
+
+python manage.py runserver
+
+Open:
+
+http://127.0.0.1:8000/admin/
+
+Login with the new superuser.
+
+For Render Deployment
+
+You already have:
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+and Render already provides:
+
+postgresql://...
+
+So once migrations are run:
+
+python manage.py migrate
+
+Render will automatically use PostgreSQL.
+
+Your current Render issue
+
+The error:
+
+relation "bank_customer" does not exist
+
+means:
+
+PostgreSQL connection ✅
+Django app running ✅
+Database table missing ❌
+
+So before deploying again, run locally:
+
+python manage.py makemigrations
+python manage.py migrate
+
+and show me:
+
+python manage.py showmigrations bank
+
+I want to verify that the bank app migration exists before we connect everything to PostgreSQL permanently.
