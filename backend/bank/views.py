@@ -50,7 +50,21 @@ def deposit(request):
     try:
 
         account_number = request.data.get('account_number')
-        amount = Decimal(request.data.get('amount'))
+        amount = request.data.get('amount')
+
+        if not account_number:
+            return Response(
+                {"message": "Account number is required"},
+                status=400
+            )
+
+        if not amount:
+            return Response(
+                {"message": "Amount is required"},
+                status=400
+            )
+
+        amount = Decimal(str(amount))
 
         account = Account.objects.get(
             account_number=account_number
@@ -65,37 +79,22 @@ def deposit(request):
             amount=amount
         )
 
-        # Email Notification
-
-        try:
-
-            send_mail(
-                subject='Deposit Successful',
-                message=f'''
-Dear {account.customer.name},
-
-₹{amount} has been deposited successfully.
-
-Account Number: {account.account_number}
-
-Current Balance: ₹{account.balance}
-
-Thank you for banking with us.
-
-Bank Management System
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[account.customer.email],
-                fail_silently=False,
-            )
-
-        except Exception as email_error:
-            print("EMAIL ERROR:", email_error)
+        # Email temporarily disabled
+        print("Deposit successful - Email skipped")
 
         return Response({
             "message": "Deposit Successful",
             "new_balance": str(account.balance)
         })
+
+    except Account.DoesNotExist:
+
+        return Response(
+            {
+                "message": "Account Not Found"
+            },
+            status=404
+        )
 
     except Exception as e:
 
@@ -105,7 +104,6 @@ Bank Management System
             },
             status=400
         )
-
 
 # ---------------- WITHDRAW ---------------- #
 
