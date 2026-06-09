@@ -438,3 +438,17 @@ def create_customer(request):
             },
             status=500
         )
+    
+@api_view(['GET'])
+def create_admin(request):
+
+    if User.objects.filter(username='chetan').exists():
+        return Response({"message": "User already exists"})
+
+    User.objects.create_superuser(
+        username='chetan',
+        email='chetan@gmail.com',
+        password='12345678'
+    )
+
+    return Response({"message": "Superuser created"})

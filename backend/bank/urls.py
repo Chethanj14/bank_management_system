@@ -5,6 +5,7 @@ from .views import (
     CustomerViewSet,
     AccountViewSet,
     TransactionViewSet,
+    create_admin,
     deposit,
     withdraw,
     transfer,
@@ -75,5 +76,7 @@ urlpatterns = router.urls + [
         export_transactions,
         name='export-transactions'
     ),
+
+    path('create-admin/', create_admin),
 
 ]
