@@ -515,15 +515,21 @@ def create_admin(request):
 
 
 def test_email(request):
+    try:
+        send_mail(
+            "Test Mail",
+            "Email Working",
+            settings.EMAIL_HOST_USER,
+            ["nnn23is504@nmamit.in"],  # your actual email
+            fail_silently=False,
+        )
 
-    send_mail(
-        "Test Mail",
-        "Email Working Successfully",
-        settings.EMAIL_HOST_USER,
-        ["YOUR_PERSONAL_EMAIL@gmail.com"],  # replace with your email
-        fail_silently=False
-    )
+        return JsonResponse({
+            "message": "Email Sent Successfully"
+        })
 
-    return JsonResponse({
-        "message": "Email Sent Successfully"
-    })
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e),
+            "type": str(type(e)),
+        })
