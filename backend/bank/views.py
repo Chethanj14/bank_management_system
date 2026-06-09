@@ -20,6 +20,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import JsonResponse
 
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.conf import settings
+
 
 # ---------------- CUSTOMER API ---------------- #
 
@@ -515,13 +519,15 @@ def create_admin(request):
 
 
 def test_email(request):
+
     try:
+
         send_mail(
             "Test Mail",
-            "Email Working",
+            "Email Working Successfully",
             settings.EMAIL_HOST_USER,
-            ["nnn23is504@nmamit.in"],  # your actual email
-            fail_silently=False,
+            ["YOUR_PERSONAL_EMAIL@gmail.com"],
+            fail_silently=False
         )
 
         return JsonResponse({
@@ -529,7 +535,7 @@ def test_email(request):
         })
 
     except Exception as e:
+
         return JsonResponse({
-            "error": str(e),
-            "type": str(type(e)),
+            "error": str(e)
         })
