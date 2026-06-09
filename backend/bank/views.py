@@ -48,7 +48,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
 def deposit(request):
 
     try:
-
         account_number = request.data.get('account_number')
         amount = request.data.get('amount')
 
@@ -79,8 +78,23 @@ def deposit(request):
             amount=amount
         )
 
-        # Email temporarily disabled
-        print("Deposit successful - Email skipped")
+        # Send Email
+        send_mail(
+            subject='Deposit Successful',
+            message=f"""
+Dear {account.customer.name},
+
+₹{amount} has been deposited successfully.
+
+Account Number: {account.account_number}
+Current Balance: ₹{account.balance}
+
+Thank you for banking with us.
+""",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[account.customer.email],
+            fail_silently=False,
+        )
 
         return Response({
             "message": "Deposit Successful",
@@ -88,20 +102,14 @@ def deposit(request):
         })
 
     except Account.DoesNotExist:
-
         return Response(
-            {
-                "message": "Account Not Found"
-            },
+            {"message": "Account Not Found"},
             status=404
         )
 
     except Exception as e:
-
         return Response(
-            {
-                "message": str(e)
-            },
+            {"message": str(e)},
             status=400
         )
 
@@ -120,9 +128,7 @@ def withdraw(request):
 
         if account.balance < amount:
             return Response(
-                {
-                    "message": "Insufficient Balance"
-                },
+                {"message": "Insufficient Balance"},
                 status=400
             )
 
@@ -135,9 +141,22 @@ def withdraw(request):
             amount=amount
         )
 
-        # Email disabled temporarily
-        print(
-            f"Withdraw: ₹{amount} from {account.account_number}"
+        # Send Email
+        send_mail(
+            subject='Withdrawal Successful',
+            message=f"""
+Dear {account.customer.name},
+
+₹{amount} has been withdrawn successfully.
+
+Account Number: {account.account_number}
+Current Balance: ₹{account.balance}
+
+Thank you for banking with us.
+""",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[account.customer.email],
+            fail_silently=False,
         )
 
         return Response({
@@ -147,23 +166,25 @@ def withdraw(request):
 
     except Account.DoesNotExist:
         return Response(
-            {
-                "message": "Account Not Found"
-            },
+            {"message": "Account Not Found"},
             status=404
         )
 
     except Exception as e:
         return Response(
-            {
-                "message": str(e)
-            },
+            {"message": str(e)},
             status=400
         )
 
 
 # ---------------- TRANSFER ---------------- #
 # ---------------- TRANSFER ---------------- #
+
+from decimal import Decimal
+from django.core.mail import send_mail
+from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 @api_view(['POST'])
 def transfer(request):
@@ -194,7 +215,12 @@ def transfer(request):
 
         amount = Decimal(str(amount))
 
-        # Prevent self transfer
+        if amount <= 0:
+            return Response(
+                {"message": "Amount must be greater than 0"},
+                status=400
+            )
+
         if from_account_number == to_account_number:
             return Response(
                 {
@@ -211,7 +237,6 @@ def transfer(request):
             account_number=to_account_number
         )
 
-        # Check balance
         if from_account.balance < amount:
             return Response(
                 {
@@ -227,25 +252,60 @@ def transfer(request):
         from_account.save()
         to_account.save()
 
-        # Transaction for sender
+        # Sender transaction
         Transaction.objects.create(
             account=from_account,
             transaction_type='Transfer Sent',
             amount=amount
         )
 
-        # Transaction for receiver
+        # Receiver transaction
         Transaction.objects.create(
             account=to_account,
             transaction_type='Transfer Received',
             amount=amount
         )
 
-        # Email disabled temporarily
-        print(
-            f"Transfer Successful: ₹{amount} from "
-            f"{from_account.account_number} "
-            f"to {to_account.account_number}"
+        # Email to Sender
+        send_mail(
+            subject='Money Transfer Successful',
+            message=f"""
+Dear {from_account.customer.name},
+
+₹{amount} has been transferred successfully.
+
+Receiver Account Number:
+{to_account.account_number}
+
+Remaining Balance:
+₹{from_account.balance}
+
+Thank you for banking with us.
+            """,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[from_account.customer.email],
+            fail_silently=False,
+        )
+
+        # Email to Receiver
+        send_mail(
+            subject='Money Received',
+            message=f"""
+Dear {to_account.customer.name},
+
+₹{amount} has been received successfully.
+
+Sender Account Number:
+{from_account.account_number}
+
+Current Balance:
+₹{to_account.balance}
+
+Thank you for banking with us.
+            """,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[to_account.customer.email],
+            fail_silently=False,
         )
 
         return Response({
@@ -438,6 +498,8 @@ def create_customer(request):
             },
             status=500
         )
+    
+    #cerate admin user for testing
     
 @api_view(['GET'])
 def create_admin(request):
