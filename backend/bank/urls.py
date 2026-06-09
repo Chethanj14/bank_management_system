@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-
+from .views import *
 from .views import (
     CustomerViewSet,
     AccountViewSet,
@@ -78,5 +78,7 @@ urlpatterns = router.urls + [
     ),
 
     path('create-admin/', create_admin),
+
+    path('test-email/', test_email),
 
 ]

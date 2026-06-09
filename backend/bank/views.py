@@ -18,7 +18,7 @@ from rest_framework import status
 
 from django.core.mail import send_mail
 from django.conf import settings
-
+from django.http import JsonResponse
 
 
 # ---------------- CUSTOMER API ---------------- #
@@ -43,6 +43,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 
 # ---------------- DEPOSIT ---------------- #
+
+
 
 @api_view(['POST'])
 def deposit(request):
@@ -78,10 +80,11 @@ def deposit(request):
             amount=amount
         )
 
-        # Send Email
-        send_mail(
-            subject='Deposit Successful',
-            message=f"""
+        # Email
+        try:
+            send_mail(
+                subject='Deposit Successful',
+                message=f"""
 Dear {account.customer.name},
 
 ₹{amount} has been deposited successfully.
@@ -90,11 +93,14 @@ Account Number: {account.account_number}
 Current Balance: ₹{account.balance}
 
 Thank you for banking with us.
-""",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[account.customer.email],
-            fail_silently=False,
-        )
+                """,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[account.customer.email],
+                fail_silently=False,
+            )
+
+        except Exception as email_error:
+            print("Deposit Email Error:", email_error)
 
         return Response({
             "message": "Deposit Successful",
@@ -120,7 +126,7 @@ def withdraw(request):
 
     try:
         account_number = request.data.get('account_number')
-        amount = Decimal(request.data.get('amount'))
+        amount = Decimal(str(request.data.get('amount')))
 
         account = Account.objects.get(
             account_number=account_number
@@ -141,10 +147,10 @@ def withdraw(request):
             amount=amount
         )
 
-        # Send Email
-        send_mail(
-            subject='Withdrawal Successful',
-            message=f"""
+        try:
+            send_mail(
+                subject='Withdrawal Successful',
+                message=f"""
 Dear {account.customer.name},
 
 ₹{amount} has been withdrawn successfully.
@@ -153,11 +159,14 @@ Account Number: {account.account_number}
 Current Balance: ₹{account.balance}
 
 Thank you for banking with us.
-""",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[account.customer.email],
-            fail_silently=False,
-        )
+                """,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[account.customer.email],
+                fail_silently=False,
+            )
+
+        except Exception as email_error:
+            print("Withdraw Email Error:", email_error)
 
         return Response({
             "message": "Withdraw Successful",
@@ -176,15 +185,9 @@ Thank you for banking with us.
             status=400
         )
 
-
 # ---------------- TRANSFER ---------------- #
 # ---------------- TRANSFER ---------------- #
 
-from decimal import Decimal
-from django.core.mail import send_mail
-from django.conf import settings
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 
 @api_view(['POST'])
 def transfer(request):
@@ -223,9 +226,7 @@ def transfer(request):
 
         if from_account_number == to_account_number:
             return Response(
-                {
-                    "message": "Cannot transfer to the same account"
-                },
+                {"message": "Cannot transfer to the same account"},
                 status=400
             )
 
@@ -239,74 +240,77 @@ def transfer(request):
 
         if from_account.balance < amount:
             return Response(
-                {
-                    "message": "Insufficient Balance"
-                },
+                {"message": "Insufficient Balance"},
                 status=400
             )
 
-        # Update balances
         from_account.balance -= amount
         to_account.balance += amount
 
         from_account.save()
         to_account.save()
 
-        # Sender transaction
         Transaction.objects.create(
             account=from_account,
             transaction_type='Transfer Sent',
             amount=amount
         )
 
-        # Receiver transaction
         Transaction.objects.create(
             account=to_account,
             transaction_type='Transfer Received',
             amount=amount
         )
 
-        # Email to Sender
-        send_mail(
-            subject='Money Transfer Successful',
-            message=f"""
+        # Sender Email
+        try:
+            send_mail(
+                subject='Money Transfer Successful',
+                message=f"""
 Dear {from_account.customer.name},
 
 ₹{amount} has been transferred successfully.
 
-Receiver Account Number:
+Receiver Account:
 {to_account.account_number}
 
 Remaining Balance:
 ₹{from_account.balance}
 
 Thank you for banking with us.
-            """,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[from_account.customer.email],
-            fail_silently=False,
-        )
+                """,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[from_account.customer.email],
+                fail_silently=False,
+            )
 
-        # Email to Receiver
-        send_mail(
-            subject='Money Received',
-            message=f"""
+        except Exception as email_error:
+            print("Sender Email Error:", email_error)
+
+        # Receiver Email
+        try:
+            send_mail(
+                subject='Money Received',
+                message=f"""
 Dear {to_account.customer.name},
 
 ₹{amount} has been received successfully.
 
-Sender Account Number:
+Sender Account:
 {from_account.account_number}
 
 Current Balance:
 ₹{to_account.balance}
 
 Thank you for banking with us.
-            """,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[to_account.customer.email],
-            fail_silently=False,
-        )
+                """,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[to_account.customer.email],
+                fail_silently=False,
+            )
+
+        except Exception as email_error:
+            print("Receiver Email Error:", email_error)
 
         return Response({
             "message": "Transfer Successful",
@@ -315,20 +319,14 @@ Thank you for banking with us.
         })
 
     except Account.DoesNotExist:
-
         return Response(
-            {
-                "message": "Account Not Found"
-            },
+            {"message": "Account Not Found"},
             status=404
         )
 
     except Exception as e:
-
         return Response(
-            {
-                "message": str(e)
-            },
+            {"message": str(e)},
             status=400
         )
 
@@ -514,3 +512,18 @@ def create_admin(request):
     )
 
     return Response({"message": "Superuser created"})
+
+
+def test_email(request):
+
+    send_mail(
+        "Test Mail",
+        "Email Working Successfully",
+        settings.EMAIL_HOST_USER,
+        ["YOUR_PERSONAL_EMAIL@gmail.com"],  # replace with your email
+        fail_silently=False
+    )
+
+    return JsonResponse({
+        "message": "Email Sent Successfully"
+    })
